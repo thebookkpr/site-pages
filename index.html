@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>site-pages</title>
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--ink:#1c2a33;--mute:#5d6f78;--line:#d3dedb;--accent:#2b6f68;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#141c20;--card:#1c272c;--ink:#e6eeec;--mute:#93a7a6;--line:#2f3f45;--accent:#5bb5aa}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:28px 16px 48px}
+h1{font:700 28px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 4px}
+.sub{color:var(--mute);margin:0 0 24px}
+ul{list-style:none;margin:0;padding:0}
+li{margin:0 0 12px}
+a.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;color:inherit;text-decoration:none;min-height:44px}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none}
+a.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.t{display:block;font:700 19px/1.3 Georgia,"Times New Roman",serif;color:var(--accent)}
+.d{display:block;color:var(--mute);margin-top:2px}
+footer{margin-top:28px;color:var(--mute);font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>site-pages</h1>
+<p class="sub">Small tools and pages. Pick one.</p>
+
+<ul>
+<!-- To add a page: copy one <li> block, change the link, title, and description. -->
+<li>
+<a class="card" href="timesheet/">
+<span class="t">Volunteer timesheet</span>
+<span class="d">Log volunteer hours, keep daily notes, and print weekly recaps.</span>
+</a>
+</li>
+</ul>
+
+<footer>by thebookkpr</footer>
+</main>
+</body>
+</html>
