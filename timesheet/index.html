@@ -12,6 +12,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#141c20;--card:#1c272c;--ink:#e6eeec;--mute:#93a7a6;--line:#2f3f45;--accent:#5bb5aa;--accent-ink:#0f1a1c;--warn:#ef8a78;--total:#223338}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
+a,a:visited,a:hover,a:active{color:var(--accent)}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif}
 main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
 h1{font:700 28px/1.2 "Source Serif 4",Georgia,serif;margin:8px 0 4px}
@@ -194,7 +195,7 @@ function tab(w){
  if(w==="recap")buildRecap();
 }
 ["cur","notes","past","recap"].forEach(function(k){$("tab-"+k).onclick=function(){tab(k)}});
-$("name").value=state.name||"";$("org").value=state.org||"";
+if(!state.name)state.name="Book Keeper";$("name").value=state.name;$("org").value=state.org||"";
 $("name").oninput=function(){state.name=this.value;save()};
 $("org").oninput=function(){state.org=this.value;save()};
 $("add").onclick=function(){
