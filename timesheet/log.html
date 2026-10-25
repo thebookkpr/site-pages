@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volunteer log</title>
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--ink:#1c2a33;--mute:#5d6f78;--line:#d3dedb;--accent:#2b6f68;--accent-ink:#fff;--total:#e7f1ef;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#141c20;--card:#1c272c;--ink:#e6eeec;--mute:#93a7a6;--line:#2f3f45;--accent:#5bb5aa;--accent-ink:#0f1a1c;--total:#223338}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 28px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 4px}
+h2{font:700 19px/1.3 Georgia,"Times New Roman",serif;margin:0 0 12px}
+a{color:var(--accent)}
+.sub{color:var(--mute);margin:0 0 16px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+button{font:inherit;font-weight:700;border-radius:8px;min-height:44px;padding:0 16px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:transparent;color:var(--accent)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.tabs{display:flex;gap:8px;margin:0 0 16px}
+.tabs button{flex:1;padding:0 4px;font-size:14px;background:var(--card);color:var(--ink);border-color:var(--line)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:440px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:500;font-size:14px}
+td.n,th.n{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;background:var(--total);border-bottom:0}
+.empty{color:var(--mute);margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.big{font:700 34px/1 Georgia,"Times New Roman",serif;color:var(--accent)}
+.sum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+details{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--bg)}
+summary{cursor:pointer;padding:12px 14px;min-height:44px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
+summary span.t{color:var(--accent);white-space:nowrap}
+.inner{padding:0 14px 14px}
+[hidden]{display:none!important}
+@media print{body{background:#fff;color:#000}section{border:0;padding:0}.noprint,.actions{display:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Volunteer log</h1>
+<p class="sub noprint"><a href="./">Back to the timesheet</a>. This page shows what you add there. It updates on its own and only sees entries saved in this same browser.</p>
+
+<div class="tabs noprint" role="tablist">
+<button type="button" role="tab" id="tab-cur" aria-selected="true">Current</button>
+<button type="button" role="tab" id="tab-past" aria-selected="false">History (<span id="pastn">0</span>)</button>
+</div>
+
+<div id="view-cur">
+<section>
+<h2 id="who">Current timesheet</h2>
+<div class="sum"><span class="big" id="total">0h 0m</span><span class="sub" style="margin:0" id="count">No days added yet</span></div>
+<div id="out"></div>
+<div class="actions">
+<button id="copy" type="button">Copy as text</button>
+<button class="ghost" id="txt" type="button">Download .txt</button>
+<button class="ghost" id="print" type="button">Print</button>
+</div>
+<p class="sub" id="msg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+
+<div id="view-past" hidden>
+<section>
+<h2>History</h2>
+<div id="pastlist"></div>
+<p class="sub" id="pmsg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+</main>
+<script>
+(function(){
+var KEY="volunteer-timesheet-v1";
+var state={name:"",org:"",entries:[],history:[]},last="__init__";
+var $=function(i){return document.getElementById(i)};
+function mins(t){var a=t.split(":");return (+a[0])*60+(+a[1])}
+function fmt(m){return Math.floor(m/60)+"h "+(m%60)+"m"}
+function d2(d){var a=d.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function fmtDate(d){return d2(d).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"})}
+function fmtTime(t){var a=t.split(":"),h=+a[0],ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+a[1]+" "+ap}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function sortE(a){a.sort(function(x,y){return x.date<y.date?-1:x.date>y.date?1:mins(x.start)-mins(y.start)})}
+function sumE(a){var t=0;a.forEach(function(e){t+=e.mins});return t}
+function table(a){
+ var h='<div class="scroll"><table><thead><tr><th>Date</th><th>Time</th><th>Task</th><th class="n">Hours</th></tr></thead><tbody>';
+ a.forEach(function(e){h+="<tr><td>"+esc(fmtDate(e.date))+"</td><td>"+fmtTime(e.start)+" – "+fmtTime(e.end)+"</td><td>"+esc(e.task||"")+'</td><td class="n">'+(e.mins/60).toFixed(2)+"</td></tr>"});
+ return h+'</tbody><tfoot><tr><td colspan="3">Total</td><td class="n">'+(sumE(a)/60).toFixed(2)+"</td></tr></tfoot></table></div>";
+}
+function textOf(a,title){
+ var L=[title||"Volunteer timesheet"];
+ if(state.name)L.push("Name: "+state.name);if(state.org)L.push("Organization: "+state.org);
+ L.push("");a.forEach(function(e){L.push(fmtDate(e.date)+": "+fmtTime(e.start)+" – "+fmtTime(e.end)+" ("+(e.mins/60).toFixed(2)+" hrs)"+(e.task?" – "+e.task:""))});
+ var t=sumE(a);L.push("");L.push("Total: "+(t/60).toFixed(2)+" hours ("+fmt(t)+")");return L.join("\n");
+}
+function copy(txt,el){
+ function done(ok){el.textContent=ok?"Copied to clipboard.":"Couldn't copy. Select the table and copy it instead."}
+ try{navigator.clipboard.writeText(txt).then(function(){done(true)},function(){done(false)})}catch(e){done(false)}
+}
+function saveTxt(name,txt,el){
+ try{var b=new Blob([txt],{type:"text/plain;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);el.textContent="Saved."}
+ catch(e){el.textContent="Couldn't download here. Try Copy as text."}
+}
+function load(){
+ var raw=null;try{raw=localStorage.getItem(KEY)}catch(e){}
+ if(raw===last)return;last=raw;
+ state={name:"",org:"",entries:[],history:[]};
+ try{if(raw){var p=JSON.parse(raw);if(p&&Array.isArray(p.entries)){state.name=p.name||"";state.org=p.org||"";state.entries=p.entries;state.history=Array.isArray(p.history)?p.history:[]}}}catch(e){}
+ render();
+}
+function render(){
+ sortE(state.entries);var tot=sumE(state.entries),who=[state.name,state.org].filter(Boolean).join(" · ");
+ $("who").textContent=who?"Current timesheet: "+who:"Current timesheet";
+ $("total").textContent=fmt(tot);
+ $("count").textContent=state.entries.length?state.entries.length+(state.entries.length===1?" entry":" entries")+" · "+(tot/60).toFixed(2)+" hours":"No days added yet";
+ $("out").innerHTML=state.entries.length?table(state.entries):'<p class="empty">Nothing here yet. Add a day on the timesheet page and it will show up here.</p>';
+ $("pastn").textContent=state.history.length;
+ var h="";
+ state.history.forEach(function(x,i){
+  h+='<details><summary><span>'+esc(x.label)+'</span><span class="t">'+(x.mins/60).toFixed(2)+' hrs</span></summary><div class="inner">'+table(x.entries)+
+  '<div class="actions"><button class="ghost" data-act="copy" data-h="'+i+'">Copy as text</button><button class="ghost" data-act="txt" data-h="'+i+'">Download .txt</button></div></div></details>';
+ });
+ $("pastlist").innerHTML=h||'<p class="empty">Nothing saved yet. Finished pay periods appear here after you tap "Save to Past &amp; start new" on the timesheet page.</p>';
+}
+function tab(w){["cur","past"].forEach(function(k){$("view-"+k).hidden=k!==w;$("tab-"+k).setAttribute("aria-selected",k===w)})}
+$("tab-cur").onclick=function(){tab("cur")};
+$("tab-past").onclick=function(){tab("past")};
+$("copy").onclick=function(){copy(textOf(state.entries),$("msg"))};
+$("txt").onclick=function(){saveTxt("Volunteer log.txt",textOf(state.entries),$("msg"))};
+$("print").onclick=function(){try{window.print()}catch(e){$("msg").textContent="Printing isn't available here. Try Copy as text."}};
+$("pastlist").onclick=function(ev){
+ var b=ev.target.closest("button[data-act]");if(!b)return;
+ var x=state.history[+b.getAttribute("data-h")];if(!x)return;
+ var t=textOf(x.entries,"Volunteer timesheet: "+x.label);
+ if(b.getAttribute("data-act")==="copy")copy(t,$("pmsg"));else saveTxt("Volunteer log - "+x.label+".txt",t,$("pmsg"));
+};
+window.addEventListener("storage",function(e){if(!e.key||e.key===KEY)load()});
+window.addEventListener("focus",load);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)load()});
+load();
+})();
+</script>
+</body>
+</html>
