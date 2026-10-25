@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volunteer Timesheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f2f6f5;--card:#fff;--ink:#1c2a33;--mute:#5d6f78;--line:#d3dedb;--accent:#2b6f68;--accent-ink:#fff;--warn:#b3402e;--total:#e7f1ef;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141c20;--card:#1c272c;--ink:#e6eeec;--mute:#93a7a6;--line:#2f3f45;--accent:#5bb5aa;--accent-ink:#0f1a1c;--warn:#ef8a78;--total:#223338}}
+:root[data-theme="dark"]{--bg:#141c20;--card:#1c272c;--ink:#e6eeec;--mute:#93a7a6;--line:#2f3f45;--accent:#5bb5aa;--accent-ink:#0f1a1c;--warn:#ef8a78;--total:#223338}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font:700 28px/1.2 "Source Serif 4",Georgia,serif;margin:8px 0 4px}
+h2{font:700 19px/1.3 "Source Serif 4",Georgia,serif;margin:0 0 12px}
+.sub{color:var(--mute);margin:0 0 20px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+label{display:block;font-weight:500;margin:0 0 4px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px}
+input:focus,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:14px}
+button{font:inherit;font-weight:700;border-radius:8px;min-height:44px;padding:0 16px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:transparent;color:var(--accent)}
+button.x{min-height:36px;padding:0 10px;border-color:var(--line);color:var(--warn);background:transparent}
+button.danger{border-color:var(--warn);color:var(--warn);background:transparent}
+.err{color:var(--warn);min-height:1.4em;margin:0 0 8px;font-weight:500}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:500;font-size:14px}
+td.n,th.n{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;background:var(--total);border-bottom:0}
+.empty{color:var(--mute);margin:0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.big{font:700 34px/1 "Source Serif 4",Georgia,serif;color:var(--accent)}
+.sum{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tabs{display:flex;gap:8px;margin:0 0 16px}
+.tabs button{flex:1;padding:0 4px;font-size:14px;line-height:1.2;background:var(--card);color:var(--ink);border-color:var(--line)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+details{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--bg)}
+summary{cursor:pointer;padding:12px 14px;min-height:44px;display:flex;justify-content:space-between;gap:10px;font-weight:700}
+summary span.t{color:var(--accent);white-space:nowrap}
+.inner{padding:0 14px 14px}
+[hidden]{display:none!important}
+textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:96px;resize:vertical}
+textarea:focus{outline:3px solid var(--accent);outline-offset:1px}
+.hk{white-space:pre-line;font:italic 500 18px/1.6 "Source Serif 4",Georgia,serif;color:var(--accent);margin:12px 0 0}
+.nt{border-top:1px solid var(--line);padding:12px 0}.nt:first-child{border-top:0}
+.nt b{display:block}.nt p{margin:4px 0;white-space:pre-wrap}
+.rc-sum{white-space:pre-wrap;margin:0 0 12px}
+.poem{margin:14px 0 6px;padding:12px 16px;border-left:5px solid var(--accent);background:var(--total);border-radius:6px}
+.pl{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.pt{font:700 19px/1.3 "Source Serif 4",Georgia,serif;margin:2px 0 6px}
+.pb{white-space:pre-line;font:italic 500 18px/1.6 "Source Serif 4",Georgia,serif;color:var(--accent)}
+#hkout .pl{display:none}#hkout .poem{margin-top:0}
+h3.wk{font:700 16px/1.3 "Source Serif 4",Georgia,serif;margin:22px 0 4px;color:var(--accent)}
+.tabs button small{font-weight:400;font-size:12px;opacity:.85}
+#rtabs button,#view-recap .tabs button{min-height:54px;padding:6px 4px}
+@media print{body{background:#fff;color:#000}section{border:0;padding:0}#entry,#notes,#haikusec,#notes+#haikusec,.actions,.x,.noprint,.tabs{display:none!important}body.rc h1,body.rc #intro{display:none}.hk,.pb,.pt,.pl,h3.wk{color:#000}.poem{background:none;border-left:3px solid #000}}
+</style>
+</head>
+<body>
+<main>
+<h1>Volunteer timesheet</h1>
+<p class="sub" id="intro">Add each day you volunteered. When a pay period is done, save it to Past timesheets and start fresh.</p>
+
+<div class="tabs noprint" role="tablist">
+<button type="button" role="tab" id="tab-cur" aria-selected="true">Timesheet</button>
+<button type="button" role="tab" id="tab-notes" aria-selected="false">Notes (<span id="noten">0</span>)</button>
+<button type="button" role="tab" id="tab-past" aria-selected="false">Past (<span id="pastn">0</span>)</button>
+<button type="button" role="tab" id="tab-recap" aria-selected="false">Weekly recap</button>
+</div>
+
+<div id="view-cur">
+<section id="entry">
+<h2>Add a day</h2>
+<div class="field"><label for="date">What day did you work?</label><input type="date" id="date"></div>
+<div class="row">
+<div class="field"><label for="start">Start time</label><input type="time" id="start"></div>
+<div class="field"><label for="end">End time</label><input type="time" id="end"></div>
+</div>
+<div class="field"><label for="task">What did you do? (optional)</label><input type="text" id="task" placeholder="e.g. Food pantry sorting" autocomplete="off"></div>
+<p class="err" id="err" role="alert"></p>
+<button id="add" type="button">Add to timesheet</button>
+</section>
+
+<section id="notes">
+<h2>Daily notes</h2>
+<div class="field"><label for="ndate">Note for which day?</label><input type="date" id="ndate"></div>
+<div class="field"><label for="ntext">How did it go?</label><textarea id="ntext" placeholder="Who you helped, what you noticed, anything worth remembering"></textarea></div>
+<p class="err" id="nerr" role="alert"></p>
+<div class="actions" style="margin-top:0"><button id="nsave" type="button">Save note</button></div>
+<p class="sub" id="nmsg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+
+<section>
+<h2>Your timesheet</h2>
+<div class="row noprint" style="margin-bottom:14px">
+<div><label for="name">Volunteer name</label><input type="text" id="name" autocomplete="name"></div>
+<div><label for="org">Organization</label><input type="text" id="org" autocomplete="organization"></div>
+</div>
+<div class="sum"><span class="big" id="total">0h 0m</span><span class="sub" style="margin:0" id="count">No days added yet</span></div>
+<div id="out"></div>
+<div class="actions">
+<button id="archive" type="button">Save to Past &amp; start new</button>
+<button class="ghost" id="copy" type="button">Copy as text</button>
+<button class="ghost" id="html" type="button">Download printable page</button>
+<button class="ghost" id="csv" type="button">Download spreadsheet</button>
+<button class="danger" id="clear" type="button">Clear without saving</button>
+</div>
+<p class="sub" id="msg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+
+<div id="view-notes" hidden>
+<section>
+<h2>Your notes</h2>
+<div id="nlist"></div>
+<p class="sub" id="nlmsg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+
+<div id="view-recap" hidden>
+<section>
+<div class="field noprint"><label for="rmonth">Which month?</label><input type="month" id="rmonth"></div>
+<p class="sub noprint" style="margin-top:-6px">Weeks run Sunday to Saturday. Each week belongs to the month its Saturday falls in.</p>
+<div class="tabs noprint" role="tablist"><button type="button" role="tab" id="rt-0" aria-selected="true"></button><button type="button" role="tab" id="rt-1" aria-selected="false"></button></div>
+<div id="rcout"></div>
+<div class="actions"><button id="rcprint" type="button">Print recap</button><button class="ghost" id="rchtml" type="button">Download printable page</button><button class="ghost" id="rccopy" type="button">Copy as text</button></div>
+<p class="sub" id="rcmsg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+
+<div id="view-past" hidden>
+<section>
+<h2>Past timesheets</h2>
+<div id="pastlist"></div>
+<p class="sub" id="pmsg" style="margin:10px 0 0" aria-live="polite"></p>
+</section>
+</div>
+</main>
+<script>
+(function(){
+var KEY="volunteer-timesheet-v1";
+var state={name:"",org:"",entries:[],history:[],notes:{}};
+var $=function(i){return document.getElementById(i)};
+try{var s=localStorage.getItem(KEY);if(s){var p=JSON.parse(s);if(p&&Array.isArray(p.entries)){state=p;if(!Array.isArray(state.history))state.history=[];if(!state.notes||typeof state.notes!=="object")state.notes={}}}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function mins(t){var a=t.split(":");return (+a[0])*60+(+a[1])}
+function fmt(m){return Math.floor(m/60)+"h "+(m%60)+"m"}
+function d2(d){var a=d.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function fmtDate(d){return d2(d).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"})}
+function short(d){return d2(d).toLocaleDateString(undefined,{month:"short",day:"numeric"})}
+function fmtTime(t){var a=t.split(":"),h=+a[0],ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+a[1]+" "+ap}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function sortE(a){a.sort(function(x,y){return x.date<y.date?-1:x.date>y.date?1:mins(x.start)-mins(y.start)})}
+function sumE(a){var t=0;a.forEach(function(e){t+=e.mins});return t}
+function table(a,del){
+ var h='<div class="scroll"><table><thead><tr><th>Date</th><th>Time</th><th>Task</th><th class="n">Hours</th>'+(del?"<th></th>":"")+"</tr></thead><tbody>";
+ a.forEach(function(e,i){h+="<tr><td>"+esc(fmtDate(e.date))+"</td><td>"+fmtTime(e.start)+" – "+fmtTime(e.end)+"</td><td>"+esc(e.task||"")+'</td><td class="n">'+(e.mins/60).toFixed(2)+"</td>"+(del?'<td><button class="x" data-i="'+i+'" aria-label="Remove entry">Remove</button></td>':"")+"</tr>"});
+ return h+'</tbody><tfoot><tr><td colspan="3">Total</td><td class="n">'+(sumE(a)/60).toFixed(2)+"</td>"+(del?"<td></td>":"")+"</tr></tfoot></table></div>";
+}
+function textOf(a,title){
+ var L=[title||"Volunteer timesheet"];
+ if(state.name)L.push("Name: "+state.name);if(state.org)L.push("Organization: "+state.org);
+ L.push("");a.forEach(function(e){L.push(fmtDate(e.date)+": "+fmtTime(e.start)+" – "+fmtTime(e.end)+" ("+(e.mins/60).toFixed(2)+" hrs)"+(e.task?" – "+e.task:""))});
+ var t=sumE(a);L.push("");L.push("Total: "+(t/60).toFixed(2)+" hours ("+fmt(t)+")");return L.join("\n");
+}
+function copy(txt,el){
+ function done(ok){el.textContent=ok?"Copied to clipboard.":"Couldn't copy. Select the table and copy it instead."}
+ try{navigator.clipboard.writeText(txt).then(function(){done(true)},function(){done(false)})}catch(e){done(false)}
+}
+function render(){
+ sortE(state.entries);var tot=sumE(state.entries);
+ $("total").textContent=fmt(tot);
+ $("count").textContent=state.entries.length?state.entries.length+(state.entries.length===1?" entry":" entries")+" · "+(tot/60).toFixed(2)+" hours":"No days added yet";
+ $("out").innerHTML=state.entries.length?table(state.entries,true):'<p class="empty">Nothing here yet. Add your first day above.</p>';
+ $("pastn").textContent=state.history.length;
+ var h="";
+ state.history.forEach(function(x,i){
+  h+='<details><summary><span>'+esc(x.label)+'</span><span class="t">'+(x.mins/60).toFixed(2)+' hrs</span></summary><div class="inner">'+table(x.entries,false)+
+  '<div class="actions"><button class="ghost" data-act="copy" data-h="'+i+'">Copy as text</button><button class="ghost" data-act="reopen" data-h="'+i+'">Reopen</button><button class="danger" data-act="del" data-h="'+i+'">Delete</button></div></div></details>';
+ });
+ $("pastlist").innerHTML=h||'<p class="empty">Nothing saved yet. When you finish a pay period, tap "Save to Past &amp; start new."</p>';
+ renderNotes();
+}
+function tab(w){
+ ["cur","notes","past","recap"].forEach(function(k){$("view-"+k).hidden=k!==w;$("tab-"+k).setAttribute("aria-selected",k===w)});
+ document.body.className=w==="recap"?"rc":"";
+ if(w==="recap")buildRecap();
+}
+["cur","notes","past","recap"].forEach(function(k){$("tab-"+k).onclick=function(){tab(k)}});
+$("name").value=state.name||"";$("org").value=state.org||"";
+$("name").oninput=function(){state.name=this.value;save()};
+$("org").oninput=function(){state.org=this.value;save()};
+$("add").onclick=function(){
+ var d=$("date").value,s=$("start").value,e=$("end").value,t=$("task").value.trim(),err=$("err");
+ err.textContent="";
+ if(!d){err.textContent="Pick the day you worked.";$("date").focus();return}
+ if(!s||!e){err.textContent="Enter both a start and an end time.";return}
+ if(mins(e)<=mins(s)){err.textContent="End time must be after the start time.";$("end").focus();return}
+ state.entries.push({date:d,start:s,end:e,task:t,mins:mins(e)-mins(s)});
+ save();render();
+ $("start").value="";$("end").value="";$("task").value="";$("date").focus();
+ $("msg").textContent="Added.";if(!$("ntext").value.trim()){$("ndate").value=d;editing=false}
+};
+$("out").onclick=function(ev){
+ var b=ev.target.closest("button[data-i]");if(!b)return;
+ state.entries.splice(+b.getAttribute("data-i"),1);save();render();$("msg").textContent="Removed.";
+};
+function confirmBtn(b,label,fn){
+ if(b.dataset.sure){delete b.dataset.sure;b.textContent=b.dataset.orig;fn();return}
+ b.dataset.sure="1";b.dataset.orig=b.textContent;b.textContent=label;
+ setTimeout(function(){if(b.dataset.sure){delete b.dataset.sure;b.textContent=b.dataset.orig}},4000);
+}
+$("archive").onclick=function(){
+ if(!state.entries.length){$("msg").textContent="Add at least one day before saving.";return}
+ confirmBtn(this,"Tap again to save",function(){
+  sortE(state.entries);var f=state.entries[0].date,l=state.entries[state.entries.length-1].date;
+  var label=short(f)+(f===l?"":" – "+short(l))+", "+d2(l).getFullYear();
+  state.history.unshift({label:label,entries:state.entries,mins:sumE(state.entries)});
+  state.entries=[];save();render();
+  $("msg").textContent="Saved to Past timesheets. You're on a fresh timesheet.";
+ });
+};
+$("clear").onclick=function(){
+ if(!state.entries.length)return;
+ confirmBtn(this,"Tap again to erase",function(){state.entries=[];save();render();$("msg").textContent="Timesheet cleared."});
+};
+var dl={save:function(o){return new Promise(function(res,rej){try{var ty=/\.csv$/i.test(o.filename)?"text/csv":"text/html";var b=new Blob([o.data],{type:ty+";charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);res()}catch(e){rej(e)}})}};
+function csvq(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function csvOf(a){var r=[["Date","Start","End","Hours","Task"]];a.forEach(function(e){r.push([e.date,e.start,e.end,(e.mins/60).toFixed(2),e.task||""])});r.push(["Total","","",(sumE(a)/60).toFixed(2),""]);return r.map(function(x){return x.map(csvq).join(",")}).join("\r\n")}
+function tsName(a){
+ var f,l;if(a.length){f=d2(a[0].date);l=d2(a[a.length-1].date)}else{f=l=new Date()}
+ var m=function(d){return d.toLocaleDateString(undefined,{month:"long"})};
+ var base=(f.getMonth()===l.getMonth()&&f.getFullYear()===l.getFullYear())?m(f)+" "+f.getFullYear():(f.getFullYear()===l.getFullYear()?m(f)+" – "+m(l)+" "+l.getFullYear():m(f)+" "+f.getFullYear()+" – "+m(l)+" "+l.getFullYear());
+ return "Volunteer TS — "+base;
+}
+function pageOf(a){
+ var rows="";a.forEach(function(e){rows+="<tr><td>"+esc(fmtDate(e.date))+"</td><td>"+fmtTime(e.start)+" – "+fmtTime(e.end)+"</td><td>"+esc(e.task||"")+'</td><td style="text-align:right">'+(e.mins/60).toFixed(2)+"</td></tr>"});
+ return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+esc(tsName(a))+'</title><style>body{font:16px/1.5 system-ui,sans-serif;margin:24px;color:#000}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:8px;text-align:left}th{background:#eee}tfoot td{font-weight:700}button{font:inherit;padding:10px 16px;margin-bottom:16px}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print</button><h1>'+esc(tsName(a))+'</h1>'+(state.name?"<p>Name: "+esc(state.name)+"</p>":"")+(state.org?"<p>Organization: "+esc(state.org)+"</p>":"")+'<table><thead><tr><th>Date</th><th>Time</th><th>Task</th><th>Hours</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td colspan="3">Total</td><td style="text-align:right">'+(sumE(a)/60).toFixed(2)+"</td></tr></tfoot></table></body></html>";
+}
+function saveFile(name,data){
+ if(!dl)return;
+ if(!state.entries.length){$("msg").textContent="Add at least one day first.";return}
+ dl.save({filename:name,data:data}).then(function(){$("msg").textContent="Saved."},function(e){$("msg").textContent=e&&e.code==="declined"?"Download canceled.":"Couldn't download from here. Try Copy as text."});
+}
+$("csv").onclick=function(){sortE(state.entries);saveFile(tsName(state.entries)+".csv",csvOf(state.entries))};
+$("html").onclick=function(){sortE(state.entries);saveFile(tsName(state.entries)+".html",pageOf(state.entries))};
+$("copy").onclick=function(){copy(textOf(state.entries),$("msg"))};
+$("pastlist").onclick=function(ev){
+ var b=ev.target.closest("button[data-act]");if(!b)return;
+ var i=+b.getAttribute("data-h"),x=state.history[i],act=b.getAttribute("data-act");
+ if(act==="copy")copy(textOf(x.entries,"Volunteer timesheet: "+x.label),$("pmsg"));
+ else if(act==="reopen")confirmBtn(b,"Tap again to reopen",function(){
+  state.entries=state.entries.concat(x.entries);state.history.splice(i,1);save();render();tab("cur");$("msg").textContent="Reopened. Those days are back on this timesheet."});
+ else if(act==="del")confirmBtn(b,"Tap again to delete",function(){state.history.splice(i,1);save();render();$("pmsg").textContent="Deleted."});
+};
+var p2=function(n){return (n<10?"0":"")+n};
+function iso(x){return x.getFullYear()+"-"+p2(x.getMonth()+1)+"-"+p2(x.getDate())}
+$("ndate").value=iso(new Date());$("rmonth").value=iso(new Date()).slice(0,7);
+var editing=false;
+function loadNote(){var n=state.notes[$("ndate").value];$("ntext").value=n?n.text:"";editing=!!n}
+function renderNotes(){
+ var h="";
+ Object.keys(state.notes).sort().reverse().forEach(function(d){var n=state.notes[d];h+='<div class="nt"><b>'+esc(fmtDate(d))+'</b><p>'+esc(n.text)+'</p>'+'<div class="actions" style="margin-top:6px">'+'<button class="ghost" data-nact="edit" data-d="'+esc(d)+'">Edit</button><button class="danger" data-nact="del" data-d="'+esc(d)+'">Delete</button></div></div>'});
+ $("nlist").innerHTML=h||'<p class="empty">No notes yet. Write one on the Timesheet tab.</p>';$("noten").textContent=Object.keys(state.notes).length;
+}
+function saveNote(keep){
+ var d=$("ndate").value,t=$("ntext").value.trim(),err=$("nerr");err.textContent="";
+ if(!d){err.textContent="Pick the day for this note.";$("ndate").focus();return false}
+  if(!t){err.textContent="Write a note first.";$("ntext").focus();return false}
+ var o=state.notes[d];if(o&&!editing)t=o.text+"\n\n"+t;
+ state.notes[d]={text:t};
+ save();renderNotes();
+$("ntext").value="";editing=false;
+ return true;
+}
+$("ndate").onchange=function(){$("nerr").textContent="";$("nmsg").textContent="";loadNote()};
+$("nsave").onclick=function(){if(saveNote(false))$("nmsg").textContent="Note saved. You can find it in the Notes tab."};
+$("nlist").onclick=function(ev){
+ var b=ev.target.closest("button[data-nact]");if(!b)return;var d=b.getAttribute("data-d"),a=b.getAttribute("data-nact");
+ if(a==="edit"){tab("cur");$("ndate").value=d;loadNote();$("ntext").focus();$("notes").scrollIntoView()}
+ else confirmBtn(b,"Tap again to delete",function(){delete state.notes[d];save();renderNotes();if($("ndate").value===d)loadNote();$("nlmsg").textContent="Note deleted."});
+};
+var rc=null;
+function monthWeeks(ym){
+ var a=ym.split("-"),y=+a[0],m=+a[1]-1,out=[],x=new Date(y,m,1);
+ x.setDate(1+(13-x.getDay())%7);
+ while(x.getMonth()===m){out.push(new Date(x.getFullYear(),x.getMonth(),x.getDate()-6));x.setDate(x.getDate()+7)}
+ return out;
+}
+function wkData(s,all){
+ var days=[],tot=0,e=new Date(s.getFullYear(),s.getMonth(),s.getDate()+6);
+ for(var i=0;i<7;i++){
+  var k=iso(new Date(s.getFullYear(),s.getMonth(),s.getDate()+i)),es=all.filter(function(x){return x.date===k}),n=state.notes[k];
+  if(es.length||n){var m=sumE(es);tot+=m;days.push({date:k,mins:m,tasks:es.map(function(x){return x.task}).filter(Boolean),note:n?n.text:""})}
+ }
+ return {from:short(iso(s)),to:short(iso(e)),days:days,mins:tot,summary:"",notes:days.filter(function(x){return x.note})};
+}
+function recapSrc(notes){return notes.map(function(x){return fmtDate(x.date)+": "+x.note}).join("\n\n")}
+function buildRecap(){
+ var ym=$("rmonth").value||iso(new Date()).slice(0,7),all=state.entries.slice(),y=+ym.split("-")[0];
+ state.history.forEach(function(x){all=all.concat(x.entries)});
+ var ws=monthWeeks(ym).map(function(s,i){var w=wkData(s,all);w.n=i+1;w.src=recapSrc(w.notes);return w});
+ var halves=[ws.slice(0,3),ws.slice(3)].map(function(p){
+  var f=p[0],l=p[p.length-1],t=0;p.forEach(function(w){t+=w.mins});
+  return {weeks:p,title:p.length>1?"Weeks "+f.n+"–"+l.n:"Week "+f.n,from:f.from,to:l.to,year:y,mins:t};
+ });
+ rc={halves:halves,cur:rc?rc.cur:0,loading:false,month:d2(ym+"-01").toLocaleDateString(undefined,{month:"long",year:"numeric"})};
+ $("rcmsg").textContent="";renderRecap();
+}
+function recapInner(h){
+ var who=[state.name,state.org].filter(Boolean).join(" · "),nd=0,o='<h2>'+esc(h.title)+' recap: '+esc(h.from+" – "+h.to+", "+h.year)+'</h2>';
+ h.weeks.forEach(function(w){nd+=w.days.length});
+ if(who)o+='<p class="sub">'+esc(who)+'</p>';
+ o+='<div class="sum"><span class="big">'+fmt(h.mins)+'</span><span class="sub" style="margin:0">'+(h.mins/60).toFixed(2)+' hours · '+nd+(nd===1?' day':' days')+'</span></div>';
+ h.weeks.forEach(function(w){
+  o+='<h3 class="wk">Week '+w.n+' · '+esc(w.from+" – "+w.to)+' · '+(w.mins/60).toFixed(2)+' hrs</h3>';
+  if(w.summary)o+='<p class="rc-sum">'+esc(w.summary)+'</p>';
+  w.days.forEach(function(x){o+='<div class="nt"><b>'+esc(fmtDate(x.date))+' · '+(x.mins/60).toFixed(2)+' hrs</b>'+(x.tasks.length?'<p class="sub" style="margin:2px 0">'+esc(x.tasks.join("; "))+'</p>':"")+(x.note?'<p>'+esc(x.note)+'</p>':"")+'</div>'});
+  if(!w.days.length)o+='<p class="empty">No hours or notes this week.</p>';
+ });
+ return o;
+}
+function renderRecap(){
+ rc.halves.forEach(function(h,i){var b=$("rt-"+i);b.innerHTML=esc(h.title)+'<br><small>'+esc(h.from+" – "+h.to)+' · '+(h.mins/60).toFixed(2)+' hrs</small>';b.setAttribute("aria-selected",i===rc.cur)});
+ $("rcout").innerHTML=recapInner(rc.halves[rc.cur]);
+}
+function recapText(h){
+ var L=[h.title+" recap: "+h.from+" – "+h.to+", "+h.year];if(state.name)L.push("Name: "+state.name);if(state.org)L.push("Organization: "+state.org);
+ L.push("Total: "+(h.mins/60).toFixed(2)+" hours");
+ h.weeks.forEach(function(w){
+  L.push("");L.push("WEEK "+w.n+" ("+w.from+" – "+w.to+"): "+(w.mins/60).toFixed(2)+" hrs");if(w.summary)L.push(w.summary);
+  w.days.forEach(function(x){L.push("");L.push(fmtDate(x.date)+" ("+(x.mins/60).toFixed(2)+" hrs)");if(x.tasks.length)L.push(x.tasks.join("; "));if(x.note)L.push(x.note);});
+ });
+ return L.join("\n");
+}
+function recapPage(h){
+ return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+esc(h.title)+' recap: '+esc(h.from+" – "+h.to+", "+h.year)+'</title><style>body{font:16px/1.5 system-ui,sans-serif;margin:24px auto;padding:0 16px;max-width:700px;color:#000}h3{margin:24px 0 4px}.nt{border-top:1px solid #999;padding:10px 0}.nt b{display:block}.nt p{margin:4px 0;white-space:pre-wrap}.sub{color:#444}.big{font-size:28px;font-weight:700;margin-right:10px}.rc-sum{white-space:pre-wrap}.poem{margin:12px 0 4px;padding:10px 14px;border-left:4px solid #000;background:#f1f1f1}.pl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#444}.pt{font:700 18px Georgia,serif}.pb{font:italic 17px/1.6 Georgia,serif;white-space:pre-line}button{font:inherit;padding:10px 16px;margin-bottom:16px}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print</button>'+recapInner(h)+'</body></html>';
+}
+$("rmonth").onchange=buildRecap;
+[0,1].forEach(function(i){$("rt-"+i).onclick=function(){if(!rc)buildRecap();rc.cur=i;renderRecap()}});
+$("rcprint").onclick=function(){
+ if(!rc)buildRecap();
+ if(rc.loading){$("rcmsg").textContent="Hold on, the summaries are still being written.";return}
+ try{window.print()}catch(e){$("rcmsg").textContent="Printing isn’t available here. Try Download printable page or Copy as text."}
+};
+$("rccopy").onclick=function(){if(!rc)buildRecap();copy(recapText(rc.halves[rc.cur]),$("rcmsg"))};
+$("rchtml").onclick=function(){
+ if(!dl)return;if(!rc)buildRecap();var h=rc.halves[rc.cur];
+ dl.save({filename:"Volunteer Recap — "+rc.month+" "+h.title+".html",data:recapPage(h)}).then(function(){$("rcmsg").textContent="Saved."},function(e){$("rcmsg").textContent=e&&e.code==="declined"?"Download canceled.":"Couldn’t download from here. Try Copy as text."});
+};
+loadNote();
+render();
+})();
+</script>
+</body>
+</html>
