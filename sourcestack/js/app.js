@@ -1,3 +1,5 @@
+const API_URL = "https://YOUR-RENDER-SERVICE.onrender.com/api/ask";
+
 const documentsInput = document.querySelector("#documents");
 const fileStatus = document.querySelector("#file-status");
 const questionForm = document.querySelector("#question-form");
@@ -24,16 +26,23 @@ questionForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  if (!question) {
+    answer.textContent = "Enter a question first.";
+    return;
+  }
+
   try {
     submitButton.disabled = true;
-    answer.textContent = "Reading documents and asking the AI…";
+    answer.textContent = "Reading your documents and asking the AI…";
 
     const documents = await Promise.all(
       files.map(async (file) => {
         const extension = file.name.split(".").pop().toLowerCase();
 
         if (!["txt", "md"].includes(extension)) {
-          throw new Error(`${file.name} is not supported yet. Choose .txt or .md files.`);
+          throw new Error(
+            `${file.name} is not supported yet. Choose a .txt or .md file.`
+          );
         }
 
         return {
@@ -43,19 +52,30 @@ questionForm.addEventListener("submit", async (event) => {
       })
     );
 
-    const response = await fetch("/api/ask", {
+    const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ question, documents })
     });
 
-    const result = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const responseText = await response.text();
+
+    if (!contentType.includes("application/json")) {
+      throw new Error(
+        "The backend returned a webpage instead of JSON. Check the Render service URL."
+      );
+    }
+
+    const result = JSON.parse(responseText);
 
     if (!response.ok) {
       throw new Error(result.error || "The request failed.");
     }
 
-    answer.textContent = result.answer;
+    answer.textContent = result.answer || "The AI returned an empty answer.";
   } catch (error) {
     answer.textContent = error.message;
   } finally {
