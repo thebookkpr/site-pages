@@ -1,0 +1,86 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #18211f;
+  background: #f4f7f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem;
+}
+
+.app {
+  width: min(100%, 720px);
+  margin: 0 auto;
+}
+
+.app-header {
+  margin-bottom: 1.5rem;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+.app-header p,
+.status {
+  color: #53615d;
+}
+
+.panel {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid #dce5e1;
+  border-radius: 12px;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  width: 100%;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid #aab9b3;
+  border-radius: 8px;
+}
+
+input[type="file"] {
+  margin: 0.25rem 0 0.75rem;
+}
+
+button {
+  margin-top: 0.75rem;
+  padding: 0.7rem 1rem;
+  color: #fff;
+  background: #176b55;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #105541;
+}
+
+.answer {
+  white-space: pre-wrap;
+  color: #384641;
+}
