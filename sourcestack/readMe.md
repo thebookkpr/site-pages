@@ -1,0 +1,1 @@
+**SourceStack** is a document-powered assistant for creating social media content. Add your subject documents once, then ask questions and generate informed post drafts based on relevant passages from those documents.
