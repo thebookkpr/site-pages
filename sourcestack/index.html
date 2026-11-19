@@ -32,15 +32,16 @@
           placeholder="For example: What are three key points I could share?"
           required
         ></textarea>
-        <button type="submit">Ask SourceStack</button>
+        <button type="submit">Prepare prompt</button>
       </form>
     </section>
 
     <section class="panel" aria-labelledby="answer-heading" aria-live="polite">
-      <h2 id="answer-heading">Answer</h2>
-      <div id="answer" class="answer">
-        Your answer will appear here.
-      </div>
+      <h2 id="answer-heading">Your prompt for Duck.ai</h2>
+      <p id="answer" class="answer">Your prepared prompt will appear here.</p>
+      <textarea id="prompt-output" rows="12" readonly hidden></textarea>
+      <button id="copy-prompt" type="button" hidden>Copy prompt</button>
+      <button id="open-duck" type="button" hidden>Open Duck.ai</button>
     </section>
   </main>
 </body>
