@@ -1,60 +1,49 @@
 require("dotenv").config();
 
 const express = require("express");
-const path = require("path");
+const cors = require("cors");
 const OpenAI = require("openai");
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("Missing OPENAI_API_KEY in your .env file.");
-}
-
 const app = express();
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+app.use(cors({
+  origin: "https://thebookkpr.github.io"
+}));
 app.use(express.json({ limit: "3mb" }));
-app.use(express.static(path.join(__dirname)));
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 app.post("/api/ask", async (req, res) => {
   const { question, documents } = req.body;
 
-  if (typeof question !== "string" || !question.trim()) {
-    return res.status(400).json({ error: "Enter a question." });
+  if (!question || !Array.isArray(documents) || documents.length === 0) {
+    return res.status(400).json({
+      error: "Provide a question and at least one document."
+    });
   }
 
-  if (!Array.isArray(documents) || documents.length === 0) {
-    return res.status(400).json({ error: "Select at least one .txt or .md document." });
-  }
-
-  const sourceText = documents
-    .filter((doc) =>
-      doc &&
-      typeof doc.name === "string" &&
-      typeof doc.text === "string"
-    )
+  const documentText = documents
     .map((doc) => `Document: ${doc.name}\n${doc.text}`)
     .join("\n\n---\n\n");
 
-  if (!sourceText.trim()) {
-    return res.status(400).json({ error: "No readable document text was provided." });
-  }
-
   try {
     const response = await client.responses.create({
-      model: "gpt-6.2-astra",
+      model: process.env.OPENAI_MODEL || "gpt-6.2-astra",
       instructions:
-        "Answer using the provided documents. If they do not contain the answer, say so. Do not invent facts. When useful, mention which document supports the answer.",
-      input: `DOCUMENTS\n${sourceText}\n\nQUESTION\n${question.trim()}`
+        "Answer using the provided documents. If they do not contain the answer, say so. Do not invent facts.",
+      input: `DOCUMENTS\n${documentText}\n\nQUESTION\n${question}`
     });
 
     res.json({ answer: response.output_text });
   } catch (error) {
-    console.error("AI request failed:", error.message);
-    res.status(500).json({ error: "The AI request failed. Check the server terminal for details." });
+    console.error(error);
+    res.status(500).json({ error: "The AI request failed. Check the backend logs." });
   }
 });
 
 const port = process.env.PORT || 3000;
-
-app.listen(port, () => {
-  console.log(`SourceStack is running at http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`SourceStack backend listening on port ${port}`);
 });
