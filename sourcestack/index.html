@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SourceStack</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <h1>SourceStack</h1>
+      <p>Ask questions about your documents and create informed social posts.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="documents-heading">
+      <h2 id="documents-heading">Your documents</h2>
+      <label for="documents">Add subject documents</label>
+      <input id="documents" type="file" multiple accept=".txt,.md,.pdf,.docx">
+      <p id="file-status" class="status">No documents selected.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="question-heading">
+      <h2 id="question-heading">Ask a question</h2>
+      <form id="question-form">
+        <label for="question">What would you like to know?</label>
+        <textarea
+          id="question"
+          name="question"
+          rows="4"
+          placeholder="For example: What are three key points I could share?"
+          required
+        ></textarea>
+        <button type="submit">Ask SourceStack</button>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="answer-heading" aria-live="polite">
+      <h2 id="answer-heading">Answer</h2>
+      <div id="answer" class="answer">
+        Your answer will appear here.
+      </div>
+    </section>
+  </main>
+</body>
+</html>
