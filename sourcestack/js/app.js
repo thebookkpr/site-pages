@@ -1,11 +1,14 @@
-const API_URL = "https://YOUR-RENDER-SERVICE.onrender.com/api/ask";
-
 const documentsInput = document.querySelector("#documents");
 const fileStatus = document.querySelector("#file-status");
 const questionForm = document.querySelector("#question-form");
 const questionInput = document.querySelector("#question");
 const answer = document.querySelector("#answer");
 const submitButton = questionForm.querySelector('button[type="submit"]');
+const promptOutput = document.querySelector("#prompt-output");
+const copyButton = document.querySelector("#copy-prompt");
+const openDuckButton = document.querySelector("#open-duck");
+
+let preparedPrompt = "";
 
 documentsInput.addEventListener("change", () => {
   const files = [...documentsInput.files];
@@ -33,7 +36,10 @@ questionForm.addEventListener("submit", async (event) => {
 
   try {
     submitButton.disabled = true;
-    answer.textContent = "Reading your documents and asking the AI…";
+    answer.textContent = "Reading your documents…";
+    promptOutput.hidden = true;
+    copyButton.hidden = true;
+    openDuckButton.hidden = true;
 
     const documents = await Promise.all(
       files.map(async (file) => {
@@ -41,7 +47,7 @@ questionForm.addEventListener("submit", async (event) => {
 
         if (!["txt", "md"].includes(extension)) {
           throw new Error(
-            `${file.name} is not supported yet. Choose a .txt or .md file.`
+            `${file.name} is not supported. Choose a .txt or .md file.`
           );
         }
 
@@ -52,33 +58,46 @@ questionForm.addEventListener("submit", async (event) => {
       })
     );
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ question, documents })
-    });
+    const documentText = documents
+      .map(({ name, text }) => `--- Document: ${name} ---\n${text}`)
+      .join("\n\n");
 
-    const contentType = response.headers.get("content-type") || "";
-    const responseText = await response.text();
+    preparedPrompt = [
+      "Answer the question using the provided documents as your sources.",
+      "If the documents do not contain the answer, say so. Do not invent facts.",
+      "When useful, identify which document supports your answer.",
+      "",
+      `Question: ${question}`,
+      "",
+      "Documents:",
+      documentText
+    ].join("\n");
 
-    if (!contentType.includes("application/json")) {
-      throw new Error(
-        "The backend returned a webpage instead of JSON. Check the Render service URL."
-      );
-    }
-
-    const result = JSON.parse(responseText);
-
-    if (!response.ok) {
-      throw new Error(result.error || "The request failed.");
-    }
-
-    answer.textContent = result.answer || "The AI returned an empty answer.";
+    promptOutput.value = preparedPrompt;
+    promptOutput.hidden = false;
+    copyButton.hidden = false;
+    openDuckButton.hidden = false;
+    answer.textContent =
+      "Prompt ready. Copy it, open Duck.ai, and paste it into the chat.";
   } catch (error) {
     answer.textContent = error.message;
   } finally {
     submitButton.disabled = false;
   }
+});
+
+copyButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(preparedPrompt);
+    answer.textContent = "Copied. Open Duck.ai and paste the prompt into the chat.";
+  } catch {
+    promptOutput.focus();
+    promptOutput.select();
+    answer.textContent =
+      "Automatic copy didn’t work. The prompt is selected—copy it, then paste it into Duck.ai.";
+  }
+});
+
+openDuckButton.addEventListener("click", () => {
+  window.open("https://duck.ai/", "_blank", "noopener,noreferrer");
 });
